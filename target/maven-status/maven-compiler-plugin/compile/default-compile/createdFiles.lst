@@ -1,0 +1,9 @@
+com/example/pdfprocessor/model/MedicalCheckup.class
+com/example/pdfprocessor/model/TotalCholestrol.class
+com/example/pdfprocessor/model/LipidProfile.class
+com/example/pdfprocessor/service/PdfProcessingService.class
+com/example/pdfprocessor/model/Triglycerides.class
+com/example/pdfprocessor/controller/PdfController.class
+com/example/pdfprocessor/model/Report.class
+com/example/pdfprocessor/PdfProcessorApplication.class
+com/example/pdfprocessor/model/LdlCholestrol.class
