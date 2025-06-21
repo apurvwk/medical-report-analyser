@@ -1,7 +1,5 @@
 package com.example.pdfprocessor.model;
 
-import lombok.Data;
-
 public class LipidProfile implements Report {
     private String totalCholesterol;
     private String triglycerides;
