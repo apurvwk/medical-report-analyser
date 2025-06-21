@@ -1,4 +1,4 @@
-name: Build and Push to Docker Hub
+name: Build and Push Multi-Arch Docker Image
 
 on:
   push:
@@ -48,6 +48,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -69,10 +72,11 @@ jobs:
           type=semver,pattern={{major}}.{{minor}}
           type=sha,prefix={{branch}}-
 
-    - name: Build and push Docker image
+    - name: Build and push multi-arch Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
+        platforms: linux/amd64,linux/arm64
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -81,5 +85,6 @@ jobs:
 
     - name: Output image info
       run: |
-        echo "Image: ${{ steps.meta.outputs.tags }}"
+        echo "Multi-arch image built and pushed:"
+        echo "Tags: ${{ steps.meta.outputs.tags }}"
         echo "Labels: ${{ steps.meta.outputs.labels }}" 
