@@ -1,4 +1,6 @@
+/Users/apurv/workspace/projects/FileProcessor/medical-report-analyser/src/main/java/com/example/pdfprocessor/model/VitaminD.java
 /Users/apurv/workspace/projects/FileProcessor/medical-report-analyser/src/main/java/com/example/pdfprocessor/model/MedicalCheckup.java
+/Users/apurv/workspace/projects/FileProcessor/medical-report-analyser/src/main/java/com/example/pdfprocessor/model/VitaminB12.java
 /Users/apurv/workspace/projects/FileProcessor/medical-report-analyser/src/main/java/com/example/pdfprocessor/controller/PdfController.java
 /Users/apurv/workspace/projects/FileProcessor/medical-report-analyser/src/main/java/com/example/pdfprocessor/model/Report.java
 /Users/apurv/workspace/projects/FileProcessor/medical-report-analyser/src/main/java/com/example/pdfprocessor/service/PdfProcessingService.java
