@@ -23,6 +23,15 @@ jobs:
         with:
           terraform_version: "1.5.0"
 
+      - name: Debug Secret Availability
+        run: |
+          if [ -z "${{ secrets.TF_API_TOKEN }}" ]; then
+            echo "::error::TF_API_TOKEN secret is NOT available to the workflow."
+            exit 1
+          else
+            echo "TF_API_TOKEN secret is available."
+          fi
+
       - name: Terraform Init
         working-directory: ./terraform
         run: terraform init
