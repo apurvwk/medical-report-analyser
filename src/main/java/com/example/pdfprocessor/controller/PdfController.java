@@ -40,4 +40,10 @@ public class PdfController {
         System.out.println("test method called");
         return ResponseEntity.ok("Call successfully made");
     }
+
+    @GetMapping("/test2")
+    public ResponseEntity<String> test2() {
+        System.out.println("test method called");
+        return ResponseEntity.ok("Call successfully made");
+    }
 }

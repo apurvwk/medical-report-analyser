@@ -1,5 +1,6 @@
 package com.example.pdfprocessor.model;
 
+
 public class LdlCholestrol implements MedicalCheckup {
     @Override
     public String checkupName() {
