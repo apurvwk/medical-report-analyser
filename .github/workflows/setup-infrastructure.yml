@@ -9,6 +9,7 @@ on:
 jobs:
   setup-infrastructure:
     runs-on: ubuntu-latest
+    environment: Dev
 
     env:
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
