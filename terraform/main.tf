@@ -10,12 +10,12 @@ terraform {
     }
   }
 
-  backend "s3" {
-    # Replace this with the name of the S3 bucket you created
-    bucket         = "tfstate-medical-report-analyser"
-    key            = "terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "terraform-state-lock"
+  cloud {
+    # Replace these with your Terraform Cloud organization and workspace names
+    organization = "apurvwk"
+    workspaces {
+      name = "medical-report-analyser"
+    }
   }
 }
 
