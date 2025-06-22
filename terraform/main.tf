@@ -4,18 +4,28 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.0"
+    }
   }
 
   backend "s3" {
     # Replace this with the name of the S3 bucket you created
-    bucket = "tfstate-medical-report-analyser"
-    key    = "terraform.tfstate"
-    region = "us-east-1"
+    bucket         = "tfstate-medical-report-analyser"
+    key            = "terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-state-lock"
   }
 }
 
 provider "aws" {
   region = "us-east-1"  # Free tier region
+}
+
+resource "tls_private_key" "main" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
 }
 
 # Create VPC and networking
@@ -111,7 +121,7 @@ resource "aws_security_group" "main" {
 # Key Pair
 resource "aws_key_pair" "main" {
   key_name   = "pdf-processor-key"
-  public_key = file("~/.ssh/id_rsa.pub")  # Use your existing SSH key
+  public_key = tls_private_key.main.public_key_openssh
 }
 
 # EC2 Instance
@@ -143,4 +153,9 @@ output "public_ip" {
 
 output "instance_id" {
   value = aws_instance.main.id
+}
+
+output "private_key_pem" {
+  value     = tls_private_key.main.private_key_pem
+  sensitive = true
 } 
