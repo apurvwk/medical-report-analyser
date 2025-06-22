@@ -4,11 +4,28 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.0"
+    }
+  }
+
+  cloud {
+    # Replace these with your Terraform Cloud organization and workspace names
+    organization = "apurvwk"
+    workspaces {
+      name = "medical-report-analyser"
+    }
   }
 }
 
 provider "aws" {
   region = "us-east-1"  # Free tier region
+}
+
+resource "tls_private_key" "main" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
 }
 
 # Create VPC and networking
@@ -23,9 +40,10 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "main" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-east-1a"
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "us-east-1a"
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "pdf-processor-subnet"
@@ -103,7 +121,7 @@ resource "aws_security_group" "main" {
 # Key Pair
 resource "aws_key_pair" "main" {
   key_name   = "pdf-processor-key"
-  public_key = file("~/.ssh/id_rsa.pub")  # Use your existing SSH key
+  public_key = tls_private_key.main.public_key_openssh
 }
 
 # EC2 Instance
@@ -135,4 +153,9 @@ output "public_ip" {
 
 output "instance_id" {
   value = aws_instance.main.id
+}
+
+output "private_key_pem" {
+  value     = tls_private_key.main.private_key_pem
+  sensitive = true
 } 
