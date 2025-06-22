@@ -1,0 +1,101 @@
+name: Deploy to AWS EC2
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Multi-Arch Docker Image"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Wait for EC2 to be ready
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.AWS_EC2_HOST }}
+        username: ${{ secrets.AWS_EC2_USER }}
+        key: ${{ secrets.AWS_EC2_SSH_KEY }}
+        script: |
+          # Wait for cloud-init to complete
+          cloud-init status --wait
+          
+          # Ensure Docker is running
+          sudo systemctl start docker
+          sudo systemctl enable docker
+          
+          # Add user to docker group if not already added
+          sudo usermod -a -G docker ec2-user || true
+
+    - name: Deploy Application
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.AWS_EC2_HOST }}
+        username: ${{ secrets.AWS_EC2_USER }}
+        key: ${{ secrets.AWS_EC2_SSH_KEY }}
+        script: |
+          # Create application directory
+          mkdir -p /home/ec2-user/pdfs
+          
+          # Pull latest image
+          echo "📥 Pulling latest Docker image..."
+          docker pull apurvwk/medical-report-analyser:latest
+          
+          # Stop and remove old container
+          echo "🛑 Stopping old container..."
+          docker stop pdf-processor || true
+          docker rm pdf-processor || true
+          
+          # Start new container
+          echo "🚀 Starting new container..."
+          docker run -d \
+            --name pdf-processor \
+            -p 8080:8080 \
+            -v /home/ec2-user/pdfs:/app/pdfs \
+            --restart unless-stopped \
+            apurvwk/medical-report-analyser:latest
+          
+          # Wait for application to start
+          echo "⏳ Waiting for application to start..."
+          sleep 20
+          
+          # Health check
+          echo "🔍 Performing health check..."
+          for i in {1..10}; do
+            if curl -f http://localhost:8080/actuator/health; then
+              echo "✅ Application is healthy!"
+              break
+            else
+              echo "⏳ Attempt $i: Application not ready yet..."
+              sleep 5
+            fi
+          done
+          
+          # Final verification
+          if curl -f http://localhost:8080/actuator/health; then
+            echo "🎉 Deployment successful!"
+            echo "🌐 Application URL: http://${{ secrets.AWS_EC2_HOST }}:8080"
+            echo "📊 Container status:"
+            docker ps
+          else
+            echo "❌ Deployment failed - health check unsuccessful"
+            echo "📋 Container logs:"
+            docker logs pdf-processor
+            exit 1
+          fi
+
+    - name: Notify Deployment Status
+      run: |
+        echo "🚀 Deployment completed successfully!"
+        echo "🌐 Your application is now live at:"
+        echo "   http://${{ secrets.AWS_EC2_HOST }}:8080"
+        echo ""
+        echo "📋 Deployment Details:"
+        echo "   - Instance: ${{ secrets.AWS_EC2_HOST }}"
+        echo "   - Port: 8080"
+        echo "   - Image: apurvwk/medical-report-analyser:latest" 
